@@ -53,3 +53,25 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Build and Release folders
+Debug/
+Release/
+.build/
+
+# CubeIDE specific metadata
+.settings/
+.metadata/
+
+# Object files and binaries
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+
+# OS generated files
+.DS_Store
+Thumbs.db
