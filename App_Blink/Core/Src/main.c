@@ -100,8 +100,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-		uint8_t msg[] = "Application Running...\r\n";
-		HAL_UART_Transmit(&huart2, msg, sizeof(msg)-1, 100);
 		HAL_Delay(1000);
   }
   /* USER CODE END 3 */
