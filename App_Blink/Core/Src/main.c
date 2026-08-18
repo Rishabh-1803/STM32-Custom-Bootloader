@@ -33,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define APPLICATION_ADDRESS 0x08004000U
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -66,7 +66,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  SCB->VTOR = APPLICATION_ADDRESS;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -99,6 +99,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+		uint8_t msg[] = "Application Running...\r\n";
+		HAL_UART_Transmit(&huart2, msg, sizeof(msg)-1, 100);
+		HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
