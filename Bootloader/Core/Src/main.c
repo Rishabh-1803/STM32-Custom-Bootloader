@@ -55,6 +55,45 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+typedef void (*pFunction)(void); // Define a function pointer type
+
+void JumpToApplication(void)
+{
+  uint32_t AppAddress = 0x08004000;
+
+  // 1. Check if there is a valid application written at 0x08004000
+  // The first 4 bytes of an app are always the Initial Stack Pointer (MSP).
+  // We check if the stack pointer points to valid RAM (0x20000000 to 0x20020000).
+  if (((*(__IO uint32_t*)AppAddress) & 0x2FFE0000) == 0x20000000)
+  {
+    // 2. De-initialize hardware peripherals so they don't interfere with the App
+    HAL_RCC_DeInit();
+    SysTick->CTRL = 0; // Disable SysTick Timer
+    SCB->ICSR = SCB_ICSR_PENDSTCLR_Msk; // Clear pending SysTick interrupt
+
+    // 3. Disable all interrupts
+    __disable_irq();
+
+    // 4. Set the Main Stack Pointer (MSP) to the App's stack pointer
+    __set_MSP(*(__IO uint32_t*)AppAddress);
+
+    // 5. Set the Vector Table Offset to the App's vector table
+    SCB->VTOR = AppAddress;
+
+    // 6. Get the App's Reset Handler address (located 4 bytes after the MSP)
+    uint32_t AppResetHandler = *(__IO uint32_t*)(AppAddress + 4);
+
+    // 7. Create a function pointer to the App's Reset Handler
+    pFunction Jump = (pFunction)AppResetHandler;
+
+    // 8. Jump to the App!
+    Jump();
+
+    // Code should never reach here
+    while(1) {}
+  }
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -96,9 +135,23 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+	    /* USER CODE BEGIN 3 */
+	    // Check if the BUTTON (PA0) is pressed (Active-Low because of the Pull-up)
+	    if (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == GPIO_PIN_RESET)
+	    {
+	      // Button is pressed! We want to stay in the bootloader and wait for an update.
+	      // For now, just blink the LED fast to show we are in "Bootloader Mode"
+	      HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+	      HAL_Delay(100); // Fast blink
+	    }
+	    else
+	    {
+	      // Button is not pressed. Jump to the Application!
+	      HAL_Delay(100); // Small delay to let voltage stabilize
+	      JumpToApplication();
+	    }
+	    /* USER CODE END 3 */
   }
-  /* USER CODE END 3 */
 }
 
 /**
