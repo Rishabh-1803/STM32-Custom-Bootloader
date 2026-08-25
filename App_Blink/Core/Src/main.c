@@ -64,9 +64,9 @@ void SystemClock_Config(void);
   */
 int main(void)
 {
-
   /* USER CODE BEGIN 1 */
   SCB->VTOR = APPLICATION_ADDRESS;
+  __enable_irq();  // <--- ADD THIS LINE TO RE-ENABLE INTERRUPTS
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/

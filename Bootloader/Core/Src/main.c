@@ -64,7 +64,7 @@ void JumpToApplication(void)
   // 1. Check if there is a valid application written at 0x08004000
   // The first 4 bytes of an app are always the Initial Stack Pointer (MSP).
   // We check if the stack pointer points to valid RAM (0x20000000 to 0x20020000).
-  if (((*(__IO uint32_t*)AppAddress) & 0x2FFE0000) == 0x20000000)
+  if (((*(__IO uint32_t*)AppAddress) & 0x2FFC0000) == 0x20000000)
   {
     // 2. De-initialize hardware peripherals so they don't interfere with the App
     HAL_RCC_DeInit();
@@ -136,22 +136,27 @@ int main(void)
     /* USER CODE END WHILE */
 
 	    /* USER CODE BEGIN 3 */
-	    // Check if the BUTTON (PA0) is pressed (Active-Low because of the Pull-up)
-	    if (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == GPIO_PIN_RESET)
+	    // Check if the BUTTON (PA0) is pressed (Active-High because of Pull-down)
+	    if (HAL_GPIO_ReadPin(BUTTON_GPIO_Port, BUTTON_Pin) == GPIO_PIN_SET)
 	    {
-	      // Button is pressed! We want to stay in the bootloader and wait for an update.
-	      // For now, just blink the LED fast to show we are in "Bootloader Mode"
+	      // Button is pressed! Fast blink (Bootloader Mode)
 	      HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-	      HAL_Delay(100); // Fast blink
+	      HAL_Delay(100);
 	    }
 	    else
 	    {
 	      // Button is not pressed. Jump to the Application!
-	      HAL_Delay(100); // Small delay to let voltage stabilize
+	      HAL_Delay(100);
 	      JumpToApplication();
+
+	      // If the jump fails, turn LED ON and hang forever
+	      while(1)
+	      {
+	        HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET); // LED ON
+	      }
 	    }
-	    /* USER CODE END 3 */
   }
+  /* USER CODE END 3 */
 }
 
 /**
